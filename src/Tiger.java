@@ -32,7 +32,7 @@ public class Tiger
         slpmain.doit(slp.Samples.dividebyzero);
         System.exit(0);
       }
-      slpmain.doit(slp.Samples.prog);
+      slpmain.doit(slp.Samples.prog1);
       System.exit(0);
     }
 

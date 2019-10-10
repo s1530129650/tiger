@@ -22,8 +22,47 @@ public class Main
 
   private int maxArgsExp(Exp.T exp)
   {
-    new Todo();
-    return -1;
+    if (exp instanceof Exp.Op) {
+    	Exp.Op op = (Exp.Op) exp;
+    	int n1 = maxArgsExp(op.left);
+    	int n2 = maxArgsExp(op.right);
+    	
+    	return n1 >= n2 ? n1:n2;
+    }
+    else if(exp instanceof Exp.Eseq) {
+    	Exp.Eseq eseq = (Exp.Eseq) exp;
+    	int n1 = maxArgsStm(eseq.stm);
+    	int n2 = maxArgsExp(eseq.exp);
+    	
+    	return n1 >= n2 ? n1 : n2;
+    }
+    else if(exp instanceof Exp.Id || exp instanceof Exp.Num) {
+    	return 0;
+    }
+    else
+    new Bug();
+    return 0;
+  }
+  
+  
+  private int maxArgsExpList(ExpList.T explist)
+  {
+	  if (explist instanceof ExpList.Pair) {
+		  ExpList.Pair pair = (ExpList.Pair) explist;
+		  int n1 = 1 + maxArgsExp(pair.exp);
+		  int n2 = 1 + maxArgsExpList(pair.list);
+		  
+		  return n1 >= n2 ? n1 : n2;
+	  }
+	  else if(explist instanceof ExpList.Last)
+	  {
+		  ExpList.Last last = (ExpList.Last) explist;
+		  int n = 1 + maxArgsExp(last.exp);
+		  return n;
+	  }
+	  else
+		  new Bug();
+	  return 0;
   }
 
   private int maxArgsStm(Stm.T stm)
@@ -35,11 +74,13 @@ public class Main
 
       return n1 >= n2 ? n1 : n2;
     } else if (stm instanceof Stm.Assign) {
-      new Todo();
-      return -1;
+      Stm.Assign assign = (Stm.Assign) stm;
+      int n = maxArgsExp(assign.exp);
+      return n;
     } else if (stm instanceof Stm.Print) {
-      new Todo();
-      return -1;
+      Stm.Print prt = (Stm.Print) stm ;
+      int n = maxArgsExpList(prt.explist);
+      return n;
     } else
       new Bug();
     return 0;
@@ -48,19 +89,76 @@ public class Main
   // ////////////////////////////////////////
   // interpreter
 
-  private void interpExp(Exp.T exp)
+  private String interpExp(Exp.T exp)
   {
-    new Todo();
+	  if(exp instanceof Exp.Id) {
+		  Exp.Id expId = (Exp.Id) exp;
+		  return expId.id;
+		  
+	  }else if(exp  instanceof Exp.Num) {
+		  Exp.Num expNum = (Exp.Num) exp;
+		  return (Integer.toString(expNum.num));
+		   
+	  }else if(exp instanceof Exp.Op) {
+		  Exp.Op expOp = (Exp.Op) exp;
+		  if(expOp.op == Exp.OP_T.ADD) {
+			  int L = Integer.parseInt(interpExp(expOp.left));
+			  int R = Integer.parseInt(interpExp(expOp.right));
+			  return Integer.toString(L+R);
+		  }else if(expOp.op == Exp.OP_T.SUB) {
+			  int L = Integer.parseInt(interpExp(expOp.left));
+			  int R = Integer.parseInt(interpExp(expOp.right));
+			  return Integer.toString(L-R);  
+		  }else if(expOp.op == Exp.OP_T.TIMES) {
+			  int L = Integer.parseInt(interpExp(expOp.left));
+			  int R = Integer.parseInt(interpExp(expOp.right));
+			  return Integer.toString(L*R);			  
+		  }else if(expOp.op == Exp.OP_T.DIVIDE) {
+			  int L = Integer.parseInt(interpExp(expOp.left));
+			  int R = Integer.parseInt(interpExp(expOp.right));
+			  return Integer.toString(L/R);
+		  }else
+			  new Bug();
+		  
+	  }else if (exp instanceof Exp.Eseq) {
+		  Exp.Eseq eseq = (Exp.Eseq) exp;
+		  interpStm(eseq.stm);
+		  return interpExp(eseq.exp);
+	  }else
+		new Bug();
+    
+    return "0";
   }
 
+  private String interpExplist(ExpList.T explist) {
+	  if(explist instanceof ExpList.Pair) {
+		  ExpList.Pair pair = (ExpList.Pair) explist;
+		  String str1 = interpExp(pair.exp);
+		  String str2 = interpExplist(pair.list);
+		  return str1 + " "+ str2;
+		  
+	  }else if(explist instanceof ExpList.Last) {
+		  ExpList.Last last = (ExpList.Last) explist;
+		  return interpExp(last.exp);
+		  
+	  }else
+		  new Bug();
+	  
+	  return "0";
+  }
+  
   private void interpStm(Stm.T prog)
   {
     if (prog instanceof Stm.Compound) {
-      new Todo();
+      Stm.Compound compound = (Stm.Compound) prog;
+      interpStm(compound.s1);
+      interpStm(compound.s2);
     } else if (prog instanceof Stm.Assign) {
-      new Todo();
+      Stm.Assign assn = (Stm.Assign) prog;
+      assn.id = interpExp(assn.exp);
     } else if (prog instanceof Stm.Print) {
-      new Todo();
+      Stm.Print prnt = (Stm.Print) prog;
+      System.out.println(interpExplist(prnt.explist));
     } else
       new Bug();
   }
