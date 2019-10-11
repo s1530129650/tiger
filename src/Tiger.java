@@ -19,6 +19,7 @@ public class Tiger
     // handle command line arguments
     CommandLine cmd = new CommandLine();
     String fname = cmd.scan(args);
+    //System.out.println(args[0]);
 
     // /////////////////////////////////////////////
     // the straight-line interpreter (and compiler)    
@@ -32,7 +33,7 @@ public class Tiger
         slpmain.doit(slp.Samples.dividebyzero);
         System.exit(0);
       }
-      slpmain.doit(slp.Samples.prog1);
+      slpmain.doit(slp.Samples.prog);
       System.exit(0);
     }
 

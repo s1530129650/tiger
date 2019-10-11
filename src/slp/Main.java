@@ -15,6 +15,8 @@ import util.Bug;
 import util.Todo;
 import control.Control;
 
+
+
 public class Main
 {
   // ///////////////////////////////////////////
@@ -89,78 +91,138 @@ public class Main
   // ////////////////////////////////////////
   // interpreter
 
-  private String interpExp(Exp.T exp)
+  class IntAndTable{
+		int i;
+		Table t;
+		IntAndTable(int ii, Table tt){
+			i = ii;
+			t = tt;
+		}
+		
+	}
+  
+  private IntAndTable interpExp(Exp.T exp,Table T)
   {
 	  if(exp instanceof Exp.Id) {
 		  Exp.Id expId = (Exp.Id) exp;
-		  return expId.id;
+		  return new IntAndTable(T.lookup( T,  expId.id),T);
 		  
 	  }else if(exp  instanceof Exp.Num) {
 		  Exp.Num expNum = (Exp.Num) exp;
-		  return (Integer.toString(expNum.num));
+		  
+		  return new IntAndTable(expNum.num,T);
 		   
 	  }else if(exp instanceof Exp.Op) {
 		  Exp.Op expOp = (Exp.Op) exp;
 		  if(expOp.op == Exp.OP_T.ADD) {
-			  int L = Integer.parseInt(interpExp(expOp.left));
-			  int R = Integer.parseInt(interpExp(expOp.right));
-			  return Integer.toString(L+R);
+			  IntAndTable L = interpExp(expOp.left,T);
+			  IntAndTable R = interpExp(expOp.right,T);
+			  return new IntAndTable(L.i + R.i,T);
+			  
 		  }else if(expOp.op == Exp.OP_T.SUB) {
-			  int L = Integer.parseInt(interpExp(expOp.left));
-			  int R = Integer.parseInt(interpExp(expOp.right));
-			  return Integer.toString(L-R);  
+			  IntAndTable L = interpExp(expOp.left,T);
+			  IntAndTable R = interpExp(expOp.right,T);
+			  return new IntAndTable(L.i - R.i,T); 
+			  
 		  }else if(expOp.op == Exp.OP_T.TIMES) {
-			  int L = Integer.parseInt(interpExp(expOp.left));
-			  int R = Integer.parseInt(interpExp(expOp.right));
-			  return Integer.toString(L*R);			  
+			  IntAndTable L = interpExp(expOp.left,T);
+			  IntAndTable R = interpExp(expOp.right,T);
+			  return new IntAndTable(L.i * R.i,T);
+			  
 		  }else if(expOp.op == Exp.OP_T.DIVIDE) {
-			  int L = Integer.parseInt(interpExp(expOp.left));
-			  int R = Integer.parseInt(interpExp(expOp.right));
-			  return Integer.toString(L/R);
+			  IntAndTable L = interpExp(expOp.left,T);
+			  IntAndTable R = interpExp(expOp.right,T);
+			  return new IntAndTable(L.i / R.i,T);
+			  
 		  }else
 			  new Bug();
 		  
 	  }else if (exp instanceof Exp.Eseq) {
 		  Exp.Eseq eseq = (Exp.Eseq) exp;
-		  interpStm(eseq.stm);
-		  return interpExp(eseq.exp);
+		  Table t = interpStm(eseq.stm,T);//
+		  t.tail = T;
+		  T = t;
+		  return interpExp(eseq.exp,t);
 	  }else
 		new Bug();
-    
-    return "0";
+    return new IntAndTable(0,T);
   }
 
-  private String interpExplist(ExpList.T explist) {
+  private IntAndTable interpExplist(ExpList.T explist,Table T) {
 	  if(explist instanceof ExpList.Pair) {
 		  ExpList.Pair pair = (ExpList.Pair) explist;
-		  String str1 = interpExp(pair.exp);
-		  String str2 = interpExplist(pair.list);
-		  return str1 + " "+ str2;
+		  IntAndTable iat1 = interpExp(pair.exp,T);
+		  System.out.print(iat1.i+" ");
+		  IntAndTable iat2 = interpExplist(pair.list,T);
+		  
+		  return iat2;
 		  
 	  }else if(explist instanceof ExpList.Last) {
 		  ExpList.Last last = (ExpList.Last) explist;
-		  return interpExp(last.exp);
+		  return interpExp(last.exp,T);
 		  
 	  }else
 		  new Bug();
 	  
-	  return "0";
+	  return new IntAndTable(0,T);
   }
   
-  private void interpStm(Stm.T prog)
+  class Table{
+		String id; 
+		int value;
+		Table tail;
+		Table(String i, int v, Table t)
+		{
+			id = i;
+			value = v;
+			tail = t;
+		}
+		int lookup(Table t, String key) {
+			while (true){
+				if(t.tail == null)
+				{
+					return 0;
+				}
+				if (t.id  == key) {
+					return t.value;
+				}	
+				else {
+					return lookup( t.tail,  key);
+				}
+			}
+		}
+	}
+
+
+  private Table interpStm(Stm.T prog,Table t)
   {
+	  
     if (prog instanceof Stm.Compound) {
       Stm.Compound compound = (Stm.Compound) prog;
-      interpStm(compound.s1);
-      interpStm(compound.s2);
+      Table t1 = interpStm(compound.s1,t);
+      t1.tail = t;
+      t = t1;
+      Table t2 = interpStm(compound.s2,t1);
+      t2.tail = t1;
+      t = t2;
+      return t2;
+      
     } else if (prog instanceof Stm.Assign) {
       Stm.Assign assn = (Stm.Assign) prog;
-      assn.id = interpExp(assn.exp);
+      Table t1 = new Table(assn.id,0,null);
+      t1.tail = t;
+      t = t1;
+      IntAndTable iat = interpExp(assn.exp,t);
+      return new Table(assn.id,iat.i,iat.t);
+      
     } else if (prog instanceof Stm.Print) {
       Stm.Print prnt = (Stm.Print) prog;
-      System.out.println(interpExplist(prnt.explist));
+      System.out.println(interpExplist(prnt.explist,t).i);
+      
+      //return 
     } else
       new Bug();
+      return new Table(null, 1 , null);
   }
 
   // ////////////////////////////////////////
@@ -304,7 +366,8 @@ public class Main
 
     // interpret a given program
     if (Control.ConSlp.action == Control.ConSlp.T.INTERP) {
-      interpStm(prog);
+    	Table T = new Table("aasasasas",0,null);
+        interpStm(prog,T);
     }
 
     // compile a given SLP program to x86
