@@ -116,6 +116,7 @@ public class Main
 		  Exp.Op expOp = (Exp.Op) exp;
 		  if(expOp.op == Exp.OP_T.ADD) {
 			  IntAndTable L = interpExp(expOp.left,T);
+			  T = L.t;
 			  IntAndTable R = interpExp(expOp.right,T);
 			  return new IntAndTable(L.i + R.i,T);
 			  
@@ -179,13 +180,14 @@ public class Main
 		}
 		int lookup(Table t, String key) {
 			while (true){
+				
+				if (t.id  == key) {
+					return t.value;
+				}
 				if(t.tail == null)
 				{
 					return 0;
 				}
-				if (t.id  == key) {
-					return t.value;
-				}	
 				else {
 					return lookup( t.tail,  key);
 				}
@@ -200,7 +202,7 @@ public class Main
     if (prog instanceof Stm.Compound) {
       Stm.Compound compound = (Stm.Compound) prog;
       Table t1 = interpStm(compound.s1,t);
-      t1.tail = t;
+      //t1.tail = t;
       t = t1;
       Table t2 = interpStm(compound.s2,t1);
       t2.tail = t1;
@@ -209,9 +211,9 @@ public class Main
       
     } else if (prog instanceof Stm.Assign) {
       Stm.Assign assn = (Stm.Assign) prog;
-      Table t1 = new Table(assn.id,0,null);
-      t1.tail = t;
-      t = t1;
+      //Table t1 = new Table(assn.id,0,null);
+      //t1.tail = t;
+      //t = t1;
       IntAndTable iat = interpExp(assn.exp,t);
       return new Table(assn.id,iat.i,iat.t);
       
@@ -366,8 +368,8 @@ public class Main
 
     // interpret a given program
     if (Control.ConSlp.action == Control.ConSlp.T.INTERP) {
-    	Table T = new Table("aasasasas",0,null);
-        interpStm(prog,T);
+    	//Table T = new Table("aasasasas",0,null);
+        interpStm(prog,null);
     }
 
     // compile a given SLP program to x86
