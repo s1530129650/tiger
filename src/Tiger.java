@@ -28,12 +28,13 @@ public class Tiger
       System.exit(0);
       break;
     default:
-      slp.Main slpmain = new slp.Main();
+      //slp.Main slpmain = new slp.Main();
+      slp2.Main slpmain = new slp2.Main();//fortest
       if (Control.ConSlp.div) {
-        slpmain.doit(slp.Samples.dividebyzero);
+        slpmain.doit(slp2.Samples.dividebyzero);
         System.exit(0);
       }
-      slpmain.doit(slp.Samples.prog);
+      slpmain.doit(slp2.Samples.prog);
       System.exit(0);
     }
 
