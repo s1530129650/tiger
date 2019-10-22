@@ -80,8 +80,11 @@ public class Token
     String s;
 
     // to check that the "lineNum" field has been properly set.
-    if (this.lineNum == null)
-      new util.Todo();
+    if (this.lineNum == null) {
+    	s = ": " + ((this.lexeme == null) ? "<NONE>" : this.lexeme) ;
+    	return this.kind.toString() + s;
+    }
+    	
 
     s = ": " + ((this.lexeme == null) ? "<NONE>" : this.lexeme) + " : at line "
         + this.lineNum.toString();

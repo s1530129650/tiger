@@ -19,22 +19,22 @@ public class Tiger
     // handle command line arguments
     CommandLine cmd = new CommandLine();
     String fname = cmd.scan(args);
-    //System.out.println(args[0]);
+    System.out.println(args[0]);
 
     // /////////////////////////////////////////////
     // the straight-line interpreter (and compiler)    
     switch (Control.ConSlp.action){
     case NONE:
-      System.exit(0);
+      //System.exit(0);
       break;
     default:
-      //slp.Main slpmain = new slp.Main();
-      slp2.Main slpmain = new slp2.Main();//fortest
+      //slp2.Main slpmain = new slp2.Main();
+      slp.Main slpmain = new slp.Main();//fortest
       if (Control.ConSlp.div) {
-        slpmain.doit(slp2.Samples.dividebyzero);
+        slpmain.doit(slp.Samples.dividebyzero);
         System.exit(0);
       }
-      slpmain.doit(slp2.Samples.prog);
+      slpmain.doit(slp.Samples.prog);
       System.exit(0);
     }
 
